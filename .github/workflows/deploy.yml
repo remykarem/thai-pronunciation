@@ -29,6 +29,9 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Install Dioxus CLI from git
+        # Note: Installing from git main branch instead of crates.io because v0.6.3
+        # has a known issue with Rust 1.81+ due to swc_common dependency conflicts.
+        # See: https://github.com/DioxusLabs/dioxus/issues/4705
         run: cargo install --git https://github.com/DioxusLabs/dioxus dioxus-cli
 
       - name: Build project
