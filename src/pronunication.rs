@@ -175,11 +175,11 @@ pub fn get_consonant_classes(word: &str) -> String {
                     ConsonantClass::Mid => "M",
                     ConsonantClass::Low => "L",
                 };
-                result.push(class_str.to_string());
+                result.push(class_str);
             }
             _ => {
                 // For non-consonants, add a space to maintain alignment
-                result.push(" ".to_string());
+                result.push(" ");
             }
         }
     }
