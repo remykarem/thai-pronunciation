@@ -1,11 +1,10 @@
 [application]
 
 [web.app]
-base_path = "thai-pronounciation"
-out_dir = "build"
+base_path = "thai-pronunciation"
 
 # HTML title tag content
-title = "thai-pronunciation"
+title = "Thai Pronunciation"
 
 # include `assets` in web platform
 [web.resource]

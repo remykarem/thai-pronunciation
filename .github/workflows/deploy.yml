@@ -35,10 +35,12 @@ jobs:
         run: cargo install --git https://github.com/DioxusLabs/dioxus dioxus-cli
 
       - name: Build project
-        run: dx build --release
+        run: dx bundle --out-dir build --release
 
       - name: Copy index.html to 404.html for SPA routing
-        run: cp ./build/index.html ./build/404.html
+        run: |
+          mv build/public/* build
+          cp ./build/index.html ./build/404.html
 
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
