@@ -7,3 +7,11 @@
 **/*.rs.bk
 .idea
 /build
+
+# Node modules and npm
+node_modules/
+package-lock.json
+package.json
+
+# Tailwind standalone CLI
+tailwindcss-linux-x64
