@@ -15,13 +15,29 @@ project/
 ```
 
 ### Tailwind
+
+The project uses Tailwind CSS v3 for styling. To set up and compile the CSS:
+
 1. Install npm: https://docs.npmjs.com/downloading-and-installing-node-js-and-npm
-2. Install the Tailwind CSS CLI: https://tailwindcss.com/docs/installation
-3. Run the following command in the root of the project to start the Tailwind CSS compiler:
+2. Install Tailwind CSS v3:
+
+```bash
+npm install -D tailwindcss@^3
+```
+
+3. Generate the CSS file (one-time or when classes change):
+
+```bash
+npx tailwindcss -i ./tailwind.css -o ./assets/tailwind.css
+```
+
+4. For development with auto-rebuild on file changes, use the `--watch` flag:
 
 ```bash
 npx tailwindcss -i ./tailwind.css -o ./assets/tailwind.css --watch
 ```
+
+**Note:** The project is configured to scan `./src/**/*.{rs,html,css}` files for Tailwind classes. If you add new Tailwind utility classes to your Rust components, re-run the Tailwind compiler to update `assets/tailwind.css`.
 
 ### Serving Your App
 
