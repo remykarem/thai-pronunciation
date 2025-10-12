@@ -1,6 +1,8 @@
 [application]
 
 [web.app]
+base_path = "thai-pronounciation"
+out_dir = "build"
 
 # HTML title tag content
 title = "thai-pronunciation"
