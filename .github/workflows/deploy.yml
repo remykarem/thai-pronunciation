@@ -38,7 +38,7 @@ jobs:
         run: dx build --release
 
       - name: Copy index.html to 404.html for SPA routing
-        run: cp ./build/index.html ./build/404.html
+        run: cp ./build/thai-pronunciation/index.html ./build/thai-pronunciation/404.html
 
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
