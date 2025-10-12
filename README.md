@@ -16,12 +16,21 @@ project/
 
 ### Tailwind
 1. Install npm: https://docs.npmjs.com/downloading-and-installing-node-js-and-npm
-2. Install the Tailwind CSS CLI: https://tailwindcss.com/docs/installation
-3. Run the following command in the root of the project to start the Tailwind CSS compiler:
+2. Install Tailwind CSS v3 (v4 is not yet fully compatible):
+```bash
+npm install -D tailwindcss@^3
+```
+3. Run the following command in the root of the project to compile Tailwind CSS:
+```bash
+npx tailwindcss -i ./tailwind.css -o ./assets/tailwind.css
+```
 
+Or use watch mode during development:
 ```bash
 npx tailwindcss -i ./tailwind.css -o ./assets/tailwind.css --watch
 ```
+
+**Note:** The generated `assets/tailwind.css` file is committed to the repository. You only need to regenerate it if you add new Tailwind utility classes to your components.
 
 ### Serving Your App
 
