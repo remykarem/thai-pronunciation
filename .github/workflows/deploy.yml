@@ -20,28 +20,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-#      - name: Install Rust
-#        uses: actions-rust-lang/setup-rust-toolchain@v1
-#        with:
-#          rustflags:
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          target: wasm32-unknown-unknown
+          override: true
 
-#      - name: Cache cargo registry
-#        uses: actions/cache@v3
-#        continue-on-error: false
-#        with:
-#          path: |
-#            ~/.cargo/registry
-#            ~/.cargo/git
-#          key: cargo-build-cache
-#
-#      - name: Install dependencies
-#        run: cargo install dioxus-cli
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@v2
 
-#      - name: Build project
-#        run: dx bundle
+      - name: Install Dioxus CLI from git
+        run: cargo install --git https://github.com/DioxusLabs/dioxus dioxus-cli
 
-      - name: Dioxus deploy
-        uses: DioxusLabs/deploy-action@0.1.2
+      - name: Build project
+        run: dx build --release
+
+      - name: Copy index.html to 404.html for SPA routing
+        run: cp ./build/index.html ./build/404.html
 
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
