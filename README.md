@@ -37,7 +37,7 @@ npx tailwindcss -i ./tailwind.css -o ./assets/tailwind.css
 npx tailwindcss -i ./tailwind.css -o ./assets/tailwind.css --watch
 ```
 
-**Note:** The project is configured to scan `./src/**/*.{rs,html,css}` files for Tailwind classes. If you add new Tailwind utility classes to your Rust components, re-run the Tailwind compiler to update `assets/tailwind.css`.
+**Note:** The project is configured to scan `./src/**/*.{rs,html,css}` and `./dist/**/*.html` files for Tailwind classes (see `tailwind.config.js`). If you add new Tailwind utility classes to your Rust components, re-run the Tailwind compiler to update `assets/tailwind.css`.
 
 ### Serving Your App
 
