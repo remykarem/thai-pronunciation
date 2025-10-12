@@ -163,6 +163,30 @@ fn classify_char(c: char) -> Option<ThaiChar> {
 }
 
 
+pub fn get_consonant_classes(word: &str) -> String {
+    let chars: Vec<char> = word.chars().collect();
+    let mut result = Vec::new();
+    
+    for c in &chars {
+        match classify_char(*c) {
+            Some(ThaiChar::Consonant { class, .. }) => {
+                let class_str = match class {
+                    ConsonantClass::High => "H",
+                    ConsonantClass::Mid => "M",
+                    ConsonantClass::Low => "L",
+                };
+                result.push(class_str.to_string());
+            }
+            _ => {
+                // For non-consonants, add a space to maintain alignment
+                result.push(" ".to_string());
+            }
+        }
+    }
+    
+    result.join("")
+}
+
 pub fn pronounce(word: &str) -> String {
     let chars: Vec<char> = word.chars().collect();
 
@@ -274,5 +298,27 @@ mod tests {
 
         // Test unknown character
         assert_eq!(classify_char('x'), None);
+    }
+
+    #[test]
+    fn test_get_consonant_classes() {
+        // Test word with mixed consonant classes
+        assert_eq!(get_consonant_classes("คุณ"), "L L"); // Low, vowel, Low (ณ is Low)
+        
+        // Test high consonant
+        assert_eq!(get_consonant_classes("ข"), "H");
+        
+        // Test mid consonant
+        assert_eq!(get_consonant_classes("ก"), "M");
+        
+        // Test low consonant
+        assert_eq!(get_consonant_classes("ค"), "L");
+        
+        // Test with vowels (should show spaces for non-consonants)
+        // สวัสดี: ส(H), ว(L), ั(vowel), ส(H), ด(M), ี(vowel)
+        assert_eq!(get_consonant_classes("สวัสดี"), "HL HM ");
+        
+        // Test empty string
+        assert_eq!(get_consonant_classes(""), "");
     }
 }

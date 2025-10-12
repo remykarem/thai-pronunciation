@@ -1,10 +1,11 @@
-use crate::pronunication::pronounce;
+use crate::pronunication::{pronounce, get_consonant_classes};
 use dioxus::prelude::*;
 
 #[component]
 pub fn ThaiTranslator() -> Element {
     let mut thai = use_signal(|| "".to_string());
     let transliteration = pronounce(&thai.to_string());
+    let consonant_classes = get_consonant_classes(&thai.to_string());
     rsx! {
         div {
             class: "flex flex-col items-center justify-center min-h-screen w-full px-4 py-8",
@@ -19,6 +20,10 @@ pub fn ThaiTranslator() -> Element {
                 p {
                     class: "text-2xl md:text-3xl lg:text-4xl text-center text-gray-200 min-h-[3rem]",
                     "{transliteration}"
+                }
+                p {
+                    class: "text-xl md:text-2xl lg:text-3xl text-center text-gray-400 min-h-[2rem] font-mono",
+                    "{consonant_classes}"
                 }
             }
         }
