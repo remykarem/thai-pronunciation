@@ -1,3 +1,6 @@
+use crate::pronunication::ThaiChar::{C, M, T, V};
+use std::collections::HashMap;
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum ConsonantClass {
     High,
@@ -7,13 +10,18 @@ enum ConsonantClass {
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum ThaiChar {
-    Consonant { class: ConsonantClass, roman: &'static str },
-    Vowel { roman: &'static str },
-    ToneMarker { tone: &'static str },
-    Modifier { roman: &'static str },
+    C {
+        class: ConsonantClass,
+        roman: &'static str,
+    },
+    V(&'static str),
+    T {
+        tone: &'static str,
+    },
+    M {
+        roman: &'static str,
+    },
 }
-
-use std::collections::HashMap;
 
 // Macro for creating simple char-to-str HashMap
 macro_rules! char_map {
@@ -103,19 +111,19 @@ fn create_consonant_map() -> HashMap<char, (ConsonantClass, &'static str)> {
 // Thai vowel mappings with IPA romanization
 fn create_vowel_map() -> HashMap<char, &'static str> {
     char_map!(
-        'ะ' => "a",   // short a
-        'า' => "a",   // long a
+        'ะ' => "a",
+        'า' => "aa",
         'ั' => "a",   // short a (above consonant)
-        'ิ' => "i",   // short i
-        'ี' => "i",   // long i
-        'ุ' => "u",   // short u
-        'ู' => "u",   // long u
+        'ิ' => "i",
+        'ี' => "ii",
+        'ุ' => "u",
+        'ู' => "uu",
         'เ' => "e",   // e
-        'แ' => "ɛ",   // open e (epsilon)
-        'โ' => "o",   // o
-        'ใ' => "ai",  // ai
-        'ไ' => "ai",  // ai
-        'อ' => "ɔ",   // open o
+        'แ' => "ɛɛ",
+        'โ' => "oo",
+        'ใ' => "ai",
+        'ไ' => "ai",
+        'อ' => "ɔɔ",   // open o
     )
 }
 
@@ -136,40 +144,42 @@ fn classify_char(c: char) -> Option<ThaiChar> {
     let vowel_map = create_vowel_map();
     let tone_marker_map = create_tone_marker_map();
 
+    // Check modifiers
+    if c == 'ห' {
+        return Some(M { roman: "h" });
+    }
+    if c == 'ฮ' {
+        return Some(M { roman: "h" });
+    }
+
     // Check consonants
     if let Some((class, roman)) = consonant_map.get(&c) {
-        return Some(ThaiChar::Consonant { class: *class, roman });
+        return Some(C {
+            class: *class,
+            roman,
+        });
     }
 
     // Check vowels
     if let Some(roman) = vowel_map.get(&c) {
-        return Some(ThaiChar::Vowel { roman });
+        return Some(V(roman));
     }
 
     // Check tone markers
     if let Some(tone) = tone_marker_map.get(&c) {
-        return Some(ThaiChar::ToneMarker { tone });
-    }
-
-    // Check modifiers
-    if c == 'ห' {
-        return Some(ThaiChar::Modifier { roman: "h" });
-    }
-    if c == 'ฮ' {
-        return Some(ThaiChar::Modifier { roman: "h" });
+        return Some(T { tone });
     }
 
     None
 }
 
-
 pub fn get_consonant_classes(word: &str) -> String {
     let chars: Vec<char> = word.chars().collect();
     let mut result = Vec::new();
-    
+
     for c in &chars {
         match classify_char(*c) {
-            Some(ThaiChar::Consonant { class, .. }) => {
+            Some(C { class, .. }) => {
                 let class_str = match class {
                     ConsonantClass::High => "H",
                     ConsonantClass::Mid => "M",
@@ -183,43 +193,26 @@ pub fn get_consonant_classes(word: &str) -> String {
             }
         }
     }
-    
+
     result.join("")
 }
 
 pub fn pronounce(word: &str) -> String {
-    let chars: Vec<char> = word.chars().collect();
-
+    let chars: Vec<ThaiChar> = word.chars().map(|ch| classify_char(ch).unwrap()).collect();
 
     // Try to match specific patterns first
     match chars.as_slice() {
-        // Simple consonant-vowel-consonant pattern (3 chars)
-        [c1, v1, c2] => {
-            let char1 = classify_char(*c1);
-            let vowel = classify_char(*v1);
-            let char2 = classify_char(*c2);
+        [C { roman: r1, .. }, C { roman: r2, .. }] => {
+            format!("{}{}{}", r1, "o", r2)
+        }
 
-            match (char1, vowel, char2) {
-                (Some(ThaiChar::Consonant { roman: r1, .. }),
-                    Some(ThaiChar::Vowel { roman: v }),
-                    Some(ThaiChar::Consonant { roman: r2, .. })) => {
-                    format!("{}{}{}", r1, v, r2)
-                }
-                _ => {
-                    // Fall back to character-by-character processing
-                    let mut result = String::new();
-                    for c in &chars {
-                        match classify_char(*c) {
-                            Some(ThaiChar::Consonant { roman, .. }) => result.push_str(roman),
-                            Some(ThaiChar::Vowel { roman }) => result.push_str(roman),
-                            Some(ThaiChar::ToneMarker { tone }) => result.push_str(tone),
-                            Some(ThaiChar::Modifier { roman }) => result.push_str(roman),
-                            None => result.push(*c),
-                        }
-                    }
-                    result
-                }
-            }
+        // Simple consonant-vowel-consonant pattern (3 chars)
+        [C { roman: r1, .. }, V(v), C { roman: r2, .. }] => {
+            format!("{}{}{}", r1, v, r2)
+        }
+
+        [V(v), C { roman: r1, .. }, C { roman: r2, .. }] => {
+            format!("{}{}{}", r1, v, r2)
         }
 
         // 4-character patterns (vowel-consonant-vowel-tone, consonant-vowel-tone-consonant, etc.)
@@ -227,12 +220,11 @@ pub fn pronounce(word: &str) -> String {
             // Fall back to character-by-character processing for complex patterns
             let mut result = String::new();
             for c in &chars {
-                match classify_char(*c) {
-                    Some(ThaiChar::Consonant { roman, .. }) => result.push_str(roman),
-                    Some(ThaiChar::Vowel { roman }) => result.push_str(roman),
-                    Some(ThaiChar::ToneMarker { tone }) => result.push_str(tone),
-                    Some(ThaiChar::Modifier { roman }) => result.push_str(roman),
-                    None => result.push(*c),
+                match c {
+                    C { roman, .. } => result.push_str(roman),
+                    V(roman) => result.push_str(roman),
+                    T { tone } => result.push_str(tone),
+                    M { roman } => result.push_str(roman),
                 }
             }
             result
@@ -242,12 +234,11 @@ pub fn pronounce(word: &str) -> String {
         _ => {
             let mut result = String::new();
             for c in &chars {
-                match classify_char(*c) {
-                    Some(ThaiChar::Consonant { roman, .. }) => result.push_str(roman),
-                    Some(ThaiChar::Vowel { roman }) => result.push_str(roman),
-                    Some(ThaiChar::ToneMarker { tone }) => result.push_str(tone),
-                    Some(ThaiChar::Modifier { roman }) => result.push_str(roman),
-                    None => result.push(*c),
+                match c {
+                    C { roman, .. } => result.push_str(roman),
+                    V(roman) => result.push_str(roman),
+                    T { tone } => result.push_str(tone),
+                    M { roman } => result.push_str(roman),
                 }
             }
             result
@@ -279,22 +270,40 @@ mod tests {
     #[test]
     fn test_classify_char() {
         // Test consonant classification
-        assert!(matches!(classify_char('ค'), Some(ThaiChar::Consonant { class: ConsonantClass::Low, .. })));
-        assert!(matches!(classify_char('ก'), Some(ThaiChar::Consonant { class: ConsonantClass::Mid, .. })));
-        assert!(matches!(classify_char('ข'), Some(ThaiChar::Consonant { class: ConsonantClass::High, .. })));
+        assert!(matches!(
+            classify_char('ค'),
+            Some(C {
+                class: ConsonantClass::Low,
+                ..
+            })
+        ));
+        assert!(matches!(
+            classify_char('ก'),
+            Some(C {
+                class: ConsonantClass::Mid,
+                ..
+            })
+        ));
+        assert!(matches!(
+            classify_char('ข'),
+            Some(C {
+                class: ConsonantClass::High,
+                ..
+            })
+        ));
 
         // Test vowel classification
-        assert!(matches!(classify_char('ุ'), Some(ThaiChar::Vowel { roman: "u" })));
-        assert!(matches!(classify_char('ี'), Some(ThaiChar::Vowel { roman: "i" })));
-        assert!(matches!(classify_char('แ'), Some(ThaiChar::Vowel { roman: "ɛ" })));
+        assert!(matches!(classify_char('ุ'), Some(V("u"))));
+        assert!(matches!(classify_char('ี'), Some(V("i"))));
+        assert!(matches!(classify_char('แ'), Some(V("ɛ"))));
 
         // Test tone marker classification
-        assert!(matches!(classify_char('่'), Some(ThaiChar::ToneMarker { tone: "̀" })));
-        assert!(matches!(classify_char('้'), Some(ThaiChar::ToneMarker { tone: "̂" })));
+        assert!(matches!(classify_char('่'), Some(T { tone: "̀" })));
+        assert!(matches!(classify_char('้'), Some(T { tone: "̂" })));
 
         // Test modifier classification
-        assert!(matches!(classify_char('ห'), Some(ThaiChar::Modifier { roman: "h" })));
-        assert!(matches!(classify_char('ฮ'), Some(ThaiChar::Modifier { roman: "h" })));
+        assert!(matches!(classify_char('ห'), Some(M { roman: "h" })));
+        assert!(matches!(classify_char('ฮ'), Some(M { roman: "h" })));
 
         // Test unknown character
         assert_eq!(classify_char('x'), None);
@@ -304,20 +313,20 @@ mod tests {
     fn test_get_consonant_classes() {
         // Test word with mixed consonant classes
         assert_eq!(get_consonant_classes("คุณ"), "L L"); // Low, vowel, Low (ณ is Low)
-        
+
         // Test high consonant
         assert_eq!(get_consonant_classes("ข"), "H");
-        
+
         // Test mid consonant
         assert_eq!(get_consonant_classes("ก"), "M");
-        
+
         // Test low consonant
         assert_eq!(get_consonant_classes("ค"), "L");
-        
+
         // Test with vowels (should show spaces for non-consonants)
         // สวัสดี: ส(H), ว(L), ั(vowel), ส(H), ด(M), ี(vowel)
         assert_eq!(get_consonant_classes("สวัสดี"), "HL HM ");
-        
+
         // Test empty string
         assert_eq!(get_consonant_classes(""), "");
     }
