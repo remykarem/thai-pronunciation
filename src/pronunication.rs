@@ -202,6 +202,17 @@ pub fn pronounce(word: &str) -> String {
 
     // Try to match specific patterns first
     match chars.as_slice() {
+        
+        [V(v), C { roman: c, .. }]  | [C { roman: c, .. }, V(v)]
+            => {
+            format!("{}{}", c, v)
+        }
+        
+        [V(v), C { roman: c, .. }, T { tone }]  | [C { roman: c, .. }, T { tone }, V(v)]
+            => {
+            format!("{}{}{}", c, v, tone)
+        }
+        
         [C { roman: r1, .. }, C { roman: r2, .. }] => {
             format!("{}{}{}", r1, "o", r2)
         }
