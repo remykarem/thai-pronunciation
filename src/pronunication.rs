@@ -213,6 +213,14 @@ pub fn pronounce(word: &str) -> String {
             format!("{}{}{}", c, v, tone)
         }
         
+        [C { roman: r1, consonantClass: ConsonantClass::Mid }, C { roman: r2, .. }] => {
+            format!("{}{}{}", r1, "ò", r2)
+        }
+        
+        [C { roman: r1, consonantClass: ConsonantClass::High }, C { roman: r2, .. }] => {
+            format!("{}{}{}", r1, "ǒ", r2)
+        }
+        
         [C { roman: r1, .. }, C { roman: r2, .. }] => {
             format!("{}{}{}", r1, "o", r2)
         }
